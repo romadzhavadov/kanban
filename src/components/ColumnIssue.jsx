@@ -78,13 +78,17 @@ const ColumnIssue = ({ title, moveIssue}) => {
 
   // Фільтруємо задачі за колонкою, зберігаючи порядок з `order`
   const issuesInColumn = order[title].map((id) => issuess.find((issue) => issue.id === id));
-  const [{ isOver }, drop] = useDrop({
-    accept: "ISSUE",
-    // drop: (item) => moveIssue(item.id, title),
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
+const [{ isOver }, drop] = useDrop({
+  accept: "ISSUE",
+  drop: (item) => {
+    if (item.column !== title) {
+      moveIssue(item.id, title, item.index);
+    }
+  },
+  collect: (monitor) => ({
+    isOver: monitor.isOver(),
+  }),
+});
 
   return (
     <VStack w="33%" minH="600px" spacing={4} align="stretch">

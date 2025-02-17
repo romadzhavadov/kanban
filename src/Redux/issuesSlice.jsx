@@ -143,8 +143,9 @@ export const issuesSlice = createSlice({
     error: "",
   },
   reducers: {
+    
     updateIssueState: (state, action) => {
-      const { issueId, newState } = action.payload;
+      const { issueId, newState, index } = action.payload;
       const issueIndex = state.data.findIndex((issue) => issue.id === issueId);
       if (issueIndex === -1) return;
 
@@ -155,17 +156,21 @@ export const issuesSlice = createSlice({
         state.order[column] = state.order[column].filter((id) => id !== issueId);
       });
 
-      // Оновлюємо статус issue та додаємо до нової колонки
+      // Додаємо в нову колонку на потрібну позицію
       if (newState === "Done") {
         issue.state = "closed";
+        state.order.Done.splice(index, 0, issueId);
+      } else if (newState === "In Progress") {
+        issue.state = "open";
+        issue.assignee = "assigned";
+        state.order["In Progress"].splice(index, 0, issueId);
       } else {
         issue.state = "open";
-        issue.assignee = newState === "In Progress" ? "assigned" : null;
+        issue.assignee = null;
+        state.order.ToDo.splice(index, 0, issueId);
       }
-
-      // Додаємо до нової колонки
-      state.order[newState].push(issueId);
     },
+
     reorderIssues: (state, action) => {
       const { sourceIndex, destinationIndex, column } = action.payload;
 
