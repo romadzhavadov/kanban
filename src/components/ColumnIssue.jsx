@@ -1,16 +1,22 @@
 import PropTypes from "prop-types";
 import { Box, Heading, VStack } from "@chakra-ui/react";
 import IssueCard from "./IssueCard";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import useIssueColumnDrop from "../hooks/useIssueColumnDrop";
+import { updateIssueState } from "../Redux/issuesSlice";
 
 
-const ColumnIssue = ({ title, moveIssue}) => {
-
+const ColumnIssue = ({ title }) => {
+  const dispatch = useDispatch();
   const issues = useSelector((state) => state.issues.data);
   const order = useSelector((state) => state.issues.order);
 
   const issuesInColumn = order[title].map((id) => issues.find((issue) => issue.id === id));
+  
+  
+  const moveIssue = (issueId, newState, index) => {
+    dispatch(updateIssueState({ issueId, newState, index }));
+  };
   const { isOver, drop } = useIssueColumnDrop(title, moveIssue)
 
   return (
@@ -30,7 +36,6 @@ const ColumnIssue = ({ title, moveIssue}) => {
               user={issue.user.login}
               comments={issue.comments}
               index={index}
-              moveIssue={moveIssue}
               column={title}
             />
           ))}
@@ -42,7 +47,6 @@ const ColumnIssue = ({ title, moveIssue}) => {
 
 ColumnIssue.propTypes = {
   title: PropTypes.string.isRequired,
-  moveIssue: PropTypes.func.isRequired,
 };
 
 export default ColumnIssue;

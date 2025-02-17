@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { saveOrderToLocalStorage, getOrderFromLocalStorage } from '../utils/localstorage';
 
 export const fetchIssues = createAsyncThunk(
   'issues/fetchIssues',
@@ -42,6 +43,7 @@ export const issuesSlice = createSlice({
 
     updateIssueState: (state, action) => {
       const { issueId, newState, index } = action.payload;
+
       const issueIndex = state.data.findIndex((issue) => issue.id === issueId);
       if (issueIndex === -1) return;
 
@@ -65,6 +67,8 @@ export const issuesSlice = createSlice({
         issue.assignee = null;
         state.order.ToDo.splice(index, 0, issueId);
       }
+
+      saveOrderToLocalStorage(state.owner, state.repo, state.order);
     },
 
     reorderIssues: (state, action) => {
@@ -77,6 +81,8 @@ export const issuesSlice = createSlice({
       columnIssues.splice(destinationIndex, 0, movedIssue);
 
       state.order[column] = columnIssues;
+
+      saveOrderToLocalStorage(state.owner, state.repo, state.order);
     },
   },
 
@@ -88,18 +94,23 @@ export const issuesSlice = createSlice({
       state.error = "";
 
       // Ініціалізуємо порядок
-      state.order = {
-        ToDo: action.payload.data
-          .filter((issue) => issue.state === "open" && !issue.assignee)
-          .map((issue) => issue.id),
-        "In Progress": action.payload.data
-          .filter((issue) => issue.state === "open" && issue.assignee)
-          .map((issue) => issue.id),
-        Done: action.payload.data
-          .filter((issue) => issue.state === "closed")
-          .map((issue) => issue.id),
-      };
-      console.log(state.order)
+      const savedOrder = getOrderFromLocalStorage(state.owner, state.repo)
+      
+      if (savedOrder) {
+        state.order = savedOrder
+      } else {
+        state.order = {
+          ToDo: action.payload.data
+            .filter((issue) => issue.state === "open" && !issue.assignee)
+            .map((issue) => issue.id),
+          "In Progress": action.payload.data
+            .filter((issue) => issue.state === "open" && issue.assignee)
+            .map((issue) => issue.id),
+          Done: action.payload.data
+            .filter((issue) => issue.state === "closed")
+            .map((issue) => issue.id),
+        };
+      }
     });
 
     builder.addCase(fetchIssues.rejected, (state, action) => {

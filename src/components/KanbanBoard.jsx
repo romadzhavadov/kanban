@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { Input, Button, VStack, HStack, Text } from "@chakra-ui/react";
+import { useState } from "react";
+import { Input, Button, VStack, HStack, Text, Link } from "@chakra-ui/react";
 import ColumnIssue from "./ColumnIssue";
-import { fetchIssues, updateIssueState } from "../redux/issuesSlice";
+import { fetchIssues } from "../Redux/issuesSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -10,33 +10,14 @@ const KanbanBoard = () => {
   const [repoUrl, setRepoUrl] = useState("");
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   if (repoUrl) {
-  //     dispatch(fetchIssues(repoUrl));
-  //   }
-  // }, [repoUrl, dispatch]);
-
-  const moveIssue = (issueId, newState) => {
-    dispatch(updateIssueState({ issueId, newState }));
-    console.log(issueId, newState)
-  };
-
-  const issues = useSelector((state) => state.issues.data) || [];
   const error = useSelector((state) => state.issues.error);
   const owner = useSelector((state) => state.issues.owner);
   const repo = useSelector((state) => state.issues.repo);
 
-  const todoIssues = issues.filter(
-    (issue) => issue.state === "open" && !issue.assignee
-  );
-  const inProgressIssues = issues.filter(
-    (issue) => issue.state === "open" && issue.assignee
-  );
-  const doneIssues = issues.filter((issue) => issue.state === "closed");
-
   return (
     <DndProvider backend={HTML5Backend}>
       <VStack p={6} align="stretch">
+        {/* Введення URL */}
         <HStack spacing={4}>
           <Input
             placeholder="Enter repo URL"
@@ -61,24 +42,39 @@ const KanbanBoard = () => {
           </Button>
         </HStack>
 
+        {/* Відображення помилки */}
         {error && <Text color="red.500" fontSize="sm" mt={2}>{error}</Text>}
 
+        {/* Посилання на профіль та репозиторій */}
         {owner && repo && (
-          <HStack spacing={1} mt={2}>
-            <Text color="blue.500" fontSize="sm" fontWeight="bold" cursor="pointer">
+          <HStack spacing={2} mt={4}>
+            <Link
+              href={`https://github.com/${owner}`}
+              color="blue.500"
+              fontSize="sm"
+              fontWeight="bold"
+              isExternal
+            >
               {owner}
-            </Text>
-            <Text color="blue.500" fontSize="sm" fontWeight="bold"> &gt; </Text>
-            <Text color="blue.500" fontSize="sm" fontWeight="bold" cursor="pointer">
+            </Link>
+            <Text color="gray.600" fontSize="sm">/</Text>
+            <Link
+              href={`https://github.com/${owner}/${repo}`}
+              color="blue.500"
+              fontSize="sm"
+              fontWeight="bold"
+              isExternal
+            >
               {repo}
-            </Text>
+            </Link>
           </HStack>
         )}
 
+        {/* Колонки */}
         <HStack mt={6} spacing={4} align="stretch">
-          <ColumnIssue title="ToDo" issues={todoIssues} moveIssue={moveIssue} />
-          <ColumnIssue title="In Progress" issues={inProgressIssues} moveIssue={moveIssue} />
-          <ColumnIssue title="Done" issues={doneIssues} moveIssue={moveIssue} />
+          <ColumnIssue title="ToDo" />
+          <ColumnIssue title="In Progress" />
+          <ColumnIssue title="Done" />
         </HStack>
       </VStack>
     </DndProvider>

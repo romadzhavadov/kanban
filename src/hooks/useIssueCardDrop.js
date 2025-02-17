@@ -1,5 +1,5 @@
 import { useDrop } from "react-dnd";
-import { reorderIssues } from "../redux/issuesSlice";
+import { reorderIssues } from "../Redux/issuesSlice";
 
 const useIssueCardDrop = (id, index, column, dispatch ) => {
   const [, drop] = useDrop({
